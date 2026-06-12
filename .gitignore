@@ -10,3 +10,4 @@ venv/
 *.log
 coverage/
 .pytest_cache/
+*.db

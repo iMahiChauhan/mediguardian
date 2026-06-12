@@ -3,18 +3,21 @@ version: '3.8'
 services:
   gateway:
     build:
-      context: ./backend/gateway
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: gateway/Dockerfile
     ports:
       - "8000:8000"
     depends_on:
       - redis
       - db
+      - symptom-service
 
   symptom-service:
     build:
-      context: ./backend/services/symptom
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: services/symptom/Dockerfile
+    ports:
+      - "8001:8001"
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/mediguardian
     depends_on:
