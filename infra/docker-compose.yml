@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ./backend/gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+
+  symptom-service:
+    build:
+      context: ./backend/services/symptom
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mediguardian
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mediguardian
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
