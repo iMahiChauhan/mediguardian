@@ -26,7 +26,7 @@ export default function LoginPage() {
         formData.append("username", username);
         formData.append("password", password);
 
-        const res = await fetch("http://localhost:8000/api/auth/login", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData.toString()
@@ -38,7 +38,7 @@ export default function LoginPage() {
         localStorage.setItem("mediguardian_token", data.access_token);
         router.push("/dashboard");
       } else {
-        const res = await fetch("http://localhost:8000/api/auth/register", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, email, password })

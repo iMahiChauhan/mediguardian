@@ -39,7 +39,7 @@ export default function ReportsPage() {
 
     try {
       const token = localStorage.getItem("mediguardian_token");
-      const res = await fetch("http://localhost:8000/api/reports/analyze", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/reports/analyze`, {
         method: "POST",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: formData,

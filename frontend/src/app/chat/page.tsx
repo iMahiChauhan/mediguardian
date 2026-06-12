@@ -22,7 +22,7 @@ export default function ChatPage() {
       const token = localStorage.getItem("mediguardian_token");
       if (!token) return;
       try {
-        const res = await fetch("http://localhost:8000/api/auth/me", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -43,7 +43,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/chat/message", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/chat/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: userId, message: userMsg, language })

@@ -34,14 +34,14 @@ export default function DashboardPage() {
       }
 
       try {
-        const meRes = await fetch("http://localhost:8000/api/auth/me", {
+        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!meRes.ok) throw new Error("Session expired");
         const userData = await meRes.json();
         setUser(userData);
 
-        const histRes = await fetch(`http://localhost:8000/api/history/${userData.id}`);
+        const histRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/history/${userData.id}`);
         if (histRes.ok) {
           setHistory(await histRes.json());
         }

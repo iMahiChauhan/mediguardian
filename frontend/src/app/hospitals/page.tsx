@@ -22,7 +22,7 @@ export default function HospitalFinderPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/hospitals/search?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hospitals/search?q=${encodeURIComponent(query)}`);
       if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
       setHospitals(data.hospitals);
