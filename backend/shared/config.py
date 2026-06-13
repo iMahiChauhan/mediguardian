@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7
 
     # CORS — comma-separated origins (Vercel URL + localhost)
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "*"
 
     # Microservice URLs (used only when running gateway mode via docker-compose)
     symptom_service_url: str = "http://localhost:8001"
