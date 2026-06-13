@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch, getApiUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
@@ -22,13 +23,8 @@ export default function ChatPage() {
       const token = localStorage.getItem("mediguardian_token");
       if (!token) return;
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUserId(data.id);
-        }
+        const data = await apiFetch<{ id: number }>("/api/auth/me");
+        setUserId(data.id);
       } catch (e) {}
     };
     fetchUser();
@@ -43,14 +39,10 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/chat/message`, {
+      const data = await apiFetch<{ reply: string }>("/api/chat/message", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, message: userMsg, language })
+        body: JSON.stringify({ user_id: userId, message: userMsg, language }),
       });
-
-      if (!res.ok) throw new Error("Chat failed");
-      const data = await res.json();
       
       setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
     } catch (err: any) {

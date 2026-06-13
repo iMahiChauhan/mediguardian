@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -34,16 +35,14 @@ export default function DashboardPage() {
       }
 
       try {
-        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!meRes.ok) throw new Error("Session expired");
-        const userData = await meRes.json();
+        const userData = await apiFetch<User>("/api/auth/me");
         setUser(userData);
 
-        const histRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/history/${userData.id}`);
-        if (histRes.ok) {
-          setHistory(await histRes.json());
+        try {
+          const historyData = await apiFetch<HistoryRecord[]>(`/api/history/${userData.id}`);
+          setHistory(historyData);
+        } catch {
+          setHistory([]);
         }
       } catch (err) {
         localStorage.removeItem("mediguardian_token");

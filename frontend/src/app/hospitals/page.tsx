@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -22,9 +23,7 @@ export default function HospitalFinderPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hospitals/search?q=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error("Search failed");
-      const data = await res.json();
+      const data = await apiFetch<{ hospitals: Hospital[] }>(`/api/hospitals/search?q=${encodeURIComponent(query)}`);
       setHospitals(data.hospitals);
     } catch (err: any) {
       setError(err.message || "Failed to connect to the hospital service.");

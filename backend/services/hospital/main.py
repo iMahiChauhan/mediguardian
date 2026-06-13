@@ -6,14 +6,14 @@ app = FastAPI(title="Hospital Finder Service")
 
 class Hospital(BaseModel):
     id: int
-    name: string = ""
-    address: string = ""
+    name: str = ""
+    address: str = ""
     distance_miles: float
     specialties: List[str]
     has_emergency_room: bool
 
 class HospitalSearchResponse(BaseModel):
-    query: string = ""
+    query: str = ""
     hospitals: List[Hospital]
 
 MOCK_HOSPITALS = [

@@ -6,4 +6,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "gateway.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Unified monolith — use gateway/main.py for docker-compose microservice mode
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

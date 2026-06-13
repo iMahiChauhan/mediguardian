@@ -1,17 +1,28 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, ForeignKey, Boolean
-from sqlalchemy.orm import declarative_base, sessionmaker
 import datetime
-import os
 
-# Use SQLite for local development
-DATABASE_URL = "sqlite:///./mediguardian.db"
-
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
 )
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+from shared.config import get_settings
+
+settings = get_settings()
+
+connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
+
+engine = create_engine(settings.database_url, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "users"
@@ -22,6 +33,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 
 class SymptomHistory(Base):
     __tablename__ = "symptom_history"
@@ -34,8 +46,9 @@ class SymptomHistory(Base):
     is_emergency = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-# Create the tables in the database
+
 Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()

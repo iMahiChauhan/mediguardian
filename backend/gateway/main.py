@@ -1,28 +1,30 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import UploadFile, File
 import httpx
-from shared.models import SymptomRequest, SymptomResponse
 import os
+
+from shared.models import SymptomRequest, SymptomResponse
+from shared.config import get_settings
+
+settings = get_settings()
 
 app = FastAPI(title="MediGuardian API Gateway")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to the frontend URL
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# In a real environment, read from env variables
-SYMPTOM_SERVICE_URL = os.getenv("SYMPTOM_SERVICE_URL", "http://localhost:8001")
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8002")
-HISTORY_SERVICE_URL = os.getenv("HISTORY_SERVICE_URL", "http://localhost:8003")
-REPORT_SERVICE_URL = os.getenv("REPORT_SERVICE_URL", "http://localhost:8004")
-HOSPITAL_SERVICE_URL = os.getenv("HOSPITAL_SERVICE_URL", "http://localhost:8005")
-CHATBOT_SERVICE_URL = os.getenv("CHATBOT_SERVICE_URL", "http://localhost:8006")
-
-from fastapi import UploadFile, File
+SYMPTOM_SERVICE_URL = settings.symptom_service_url
+AUTH_SERVICE_URL = settings.auth_service_url
+HISTORY_SERVICE_URL = settings.history_service_url
+REPORT_SERVICE_URL = settings.report_service_url
+HOSPITAL_SERVICE_URL = settings.hospital_service_url
+CHATBOT_SERVICE_URL = settings.chatbot_service_url
 
 @app.get("/health")
 def health_check():
@@ -36,7 +38,7 @@ async def proxy_hospital_search(q: str = ""):
             res = await client.get(f"{HOSPITAL_SERVICE_URL}/search", params={"q": q})
             res.raise_for_status()
             return res.json()
-        except httpx.RequestError as e:
+        except httpx.RequestError:
             raise HTTPException(status_code=503, detail="Hospital service unavailable")
 
 # --- CHATBOT ROUTES ---
@@ -48,7 +50,7 @@ async def proxy_chat(request: Request):
             res = await client.post(f"{CHATBOT_SERVICE_URL}/chat", json=data)
             res.raise_for_status()
             return res.json()
-        except httpx.RequestError as e:
+        except httpx.RequestError:
             raise HTTPException(status_code=503, detail="Chat service unavailable")
 
 # --- REPORTS ROUTES ---
@@ -67,14 +69,12 @@ async def proxy_analyze_report(file: UploadFile = File(...)):
             raise HTTPException(status_code=503, detail=f"Report service unavailable: {e}")
         except httpx.HTTPStatusError as e:
             raise HTTPException(status_code=e.response.status_code, detail="Error from report service")
-    return {"status": "ok", "service": "api-gateway"}
 
 # --- SYMPTOM ROUTES ---
 @app.post("/api/symptoms", response_model=SymptomResponse)
 async def proxy_symptoms(request: SymptomRequest):
     async with httpx.AsyncClient() as client:
         try:
-            # 1. Analyze Symptoms
             response = await client.post(
                 f"{SYMPTOM_SERVICE_URL}/analyze", 
                 json=request.model_dump()
@@ -82,7 +82,6 @@ async def proxy_symptoms(request: SymptomRequest):
             response.raise_for_status()
             symptom_data = response.json()
 
-            # 2. Save to history if user_id is provided
             if request.user_id:
                 try:
                     top_condition = symptom_data["conditions"][0] if symptom_data["conditions"] else None
@@ -98,7 +97,7 @@ async def proxy_symptoms(request: SymptomRequest):
                             }
                         )
                 except Exception as e:
-                    print(f"Failed to save history: {e}") # Non-blocking
+                    print(f"Failed to save history: {e}")
 
             return symptom_data
         except httpx.RequestError as e:

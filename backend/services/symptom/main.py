@@ -7,8 +7,7 @@ app = FastAPI(title="Symptom Service")
 def health_check():
     return {"status": "ok", "service": "symptom-service"}
 
-@app.post("/analyze", response_model=SymptomResponse)
-def analyze_symptoms(request: SymptomRequest):
+def analyze_symptoms(request: SymptomRequest) -> SymptomResponse:
     text = request.text.lower()
     
     # Emergency rule check
@@ -64,3 +63,8 @@ def analyze_symptoms(request: SymptomRequest):
         conditions=conditions,
         is_emergency=False
     )
+
+
+@app.post("/analyze", response_model=SymptomResponse)
+def analyze_symptoms_endpoint(request: SymptomRequest):
+    return analyze_symptoms(request)
