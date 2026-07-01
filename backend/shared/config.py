@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # Database — SQLite locally, Render Postgres in production
     database_url: str = "sqlite:///./mediguardian.db"
+    auto_create_tables: bool = False
 
     # Auth
     secret_key: str = "change-me-in-production-use-openssl-rand-hex-32"
